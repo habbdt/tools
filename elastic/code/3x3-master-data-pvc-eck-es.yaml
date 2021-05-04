@@ -3,13 +3,28 @@ kind: Elasticsearch
 metadata:
   name: elasticsearch-prod
 spec:
-  version: 7.5.2
+  version: 7.12.1
+  secureSettings:
+  - secretName: gcs-credentials
   nodeSets:
   - name: master-nodes
     count: 3
     config:
       node.master: true
       node.data: false
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin install --batch repository-gcs
     volumeClaimTemplates:
     - metadata:
         name: elasticsearch-master-data
@@ -25,6 +40,19 @@ spec:
     config:
       node.master: false
       node.data: true
+    podTemplate:
+      spec:
+        initContainers:
+        - name: sysctl
+          securityContext:
+            privileged: true
+          command: ['sh', '-c', 'sysctl -w vm.max_map_count=262144']
+        - name: install-plugins
+          command:
+          - sh
+          - -c
+          - |
+            bin/elasticsearch-plugin install --batch repository-gcs
     volumeClaimTemplates:
     - metadata:
         name: elasticsearch-data
