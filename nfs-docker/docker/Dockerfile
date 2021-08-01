@@ -1,19 +1,13 @@
-FROM ubuntu
-ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get update -qq && apt-get install -y nfs-kernel-server runit inotify-tools -qq
+FROM centos
+USER root
+
+RUN yum -y install /usr/bin/ps nfs-utils && yum clean all 
 RUN mkdir -p /exports
+ADD run_nfs /usr/local/bin/run_nfs.sh
+ADD index.html /tmp/index.html
+RUN chmod 644 /tmp/index.html
+RUN chmod +x /usr/local/bin/run_nfs.sh
+RUN chmod -R 777 /etc/exports /var/lib/nfs /var/run /exports
 
-RUN mkdir -p /etc/sv/nfs
-ADD nfs.init /etc/sv/nfs/run
-ADD nfs.stop /etc/sv/nfs/finish
-
-ADD nfs_setup.sh /usr/local/bin/nfs_setup
-
-RUN echo "nfs             2049/tcp" >> /etc/services
-RUN echo "nfs             111/udp" >> /etc/services
-
-VOLUME /exports
-
-EXPOSE 111/udp 2049/tcp
-
-ENTRYPOINT ["/usr/local/bin/nfs_setup"]
+EXPOSE 111/udp 111/tcp 2049/tcp 20048/tcp
+ENTRYPOINT ["sh", "/usr/local/bin/run_nfs.sh", "/exports"]
