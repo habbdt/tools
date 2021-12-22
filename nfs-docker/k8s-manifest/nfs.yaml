@@ -19,7 +19,11 @@ spec:
     port: 2049
     targetPort: 2049
     protocol: TCP
-  type: LoadBalancer
+  - name: rpcbind
+    port: 111
+    targetPort: 111
+    protocol: TCP
+  type: NodePort
   selector:
     app: nfs-server
 ---
@@ -41,7 +45,8 @@ spec:
     spec:
       containers:
       - name: nfs
-        image: cpuguy83/nfs-server
+        image:  habbdt/volume-nfs:1.0
+        imagePullPolicy: Always
         ports:
         - containerPort: 2049
           name: nfs
