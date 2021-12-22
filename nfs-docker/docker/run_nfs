@@ -44,7 +44,7 @@ function start()
     /usr/sbin/rpcinfo 127.0.0.1 > /dev/null; s=$?
     if [ $s -ne 0 ]; then
        echo "Starting rpcbind"
-       /usr/sbin/rpcbind -w
+       /usr/sbin/rpcbind -w -i
     fi
 
     mount -t nfsd nfds /proc/fs/nfsd

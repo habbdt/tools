@@ -1,13 +1,20 @@
-FROM centos
-USER root
+FROM fedora:latest
+LABEL description="NFS Server Docker Image Based on Fedora"
+MAINTAINER habbdt@gmail.com
 
-RUN yum -y install /usr/bin/ps nfs-utils && yum clean all 
-RUN mkdir -p /exports
+USER root
+WORKDIR /root
+
 ADD run_nfs /usr/local/bin/run_nfs.sh
 ADD index.html /tmp/index.html
-RUN chmod 644 /tmp/index.html
-RUN chmod +x /usr/local/bin/run_nfs.sh
-RUN chmod -R 777 /etc/exports /var/lib/nfs /var/run /exports
+
+RUN yum update -y && \
+    yum install -y rpcbind nfs-utils /usr/bin/ps && \
+    mkdir -p /exports && \
+    chmod +x /usr/local/bin/run_nfs.sh && \
+    chmod 644 /tmp/index.html && \
+    chmod -R 777 /etc/exports /var/lib/nfs /var/run /exports && \
+    rm -rf /var/cache/dnf
 
 EXPOSE 111/udp 111/tcp 2049/tcp 20048/tcp
 ENTRYPOINT ["sh", "/usr/local/bin/run_nfs.sh", "/exports"]
